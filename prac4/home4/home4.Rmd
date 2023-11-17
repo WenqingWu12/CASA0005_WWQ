@@ -1,0 +1,52 @@
+---
+title: "home4"
+output: html_document
+date: "2023-11-17"
+---
+#Step1 read packages
+```{r}
+install.packages("countrycode")
+library(countrycode)
+library(sf)
+library(here)
+library(janitor)
+library(tidyverse)
+library(terra)
+library(ggplot2)
+library(RSQLite)
+library(countrycode)
+```
+
+#Step2 read data
+```{r}
+HDI <- read_csv(here::here("E:/CASA0005/CASA0005_WWQ/prac4/home4/home4_data/HDR21-22_Composite_indices_complete_time_series.csv"),
+                locale = locale(encoding = "latin1"),
+                na = " ", skip=0)
+World <- st_read("E:/CASA0005/CASA0005_WWQ/prac4/home4/home4_data/World_Countries_Generalized.shp")
+
+```
+
+#Step3 change country name to country code by using function'countrycode'
+```{r}
+HDIcols<- HDI %>%
+  clean_names()%>%
+  select(iso3, country, gii_2019, gii_2010)%>%
+  mutate(difference=gii_2019 - gii_2010)%>%
+  mutate(iso_code=countrycode(country, origin = 'country.name', destination = 'iso2c'))%>%
+  mutate(iso_code2=countrycode(iso3, origin ='iso3c', destination = 'iso2c'))
+```
+
+#Step4 left join data
+```{r}
+Join_HDI <- World %>% 
+  clean_names() %>%
+  left_join(., 
+            HDIcols,
+            by = c("iso" = "iso_code"))
+```
+
+#Step5 have a look
+```{r}
+View(Join_HDI)
+```
+
